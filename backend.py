@@ -1,65 +1,56 @@
 import sqlite3
 
-#create connection 
-def connection():
-    conn=sqlite3.connect("books.db")
-    cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS book(id INTEGER PRIMARY KEY, title text, author text, year integer, isbn integer)")
-    conn.commit()
-    conn.close()
+
+class Database:
+    #create connection - need to do init to ensure that this is called 
+    #INITIALIZE AND OBJECT sort of like a constructor 
+    #the datbase object is sent to __init__
+    #you need to pass a parameter - and the object instance will be passed through it
+    def __init__(self, db): 
+        self.conn=sqlite3.connect(db)
+        self.cur = self.conn.cursor()
+        self.cur.execute("CREATE TABLE IF NOT EXISTS book(id INTEGER PRIMARY KEY, title text, author text, year integer, isbn integer)")
+        self.conn.commit()
 
 
+#THESE ARE NOT CALLED BECAUSE WE NEED TO CALL THESE FUNCTIONS
 
-def insert(title, author, year, isbn):
-    conn=sqlite3.connect("books.db")
-    cur = conn.cursor()
-    cur.execute("INSERT INTO book VALUES(Null, ?,?,?,?)", (title, author, year, isbn))
-    conn.commit()
-    conn.close()
+    def insert(self, title, author, year, isbn):
+        self.cur.execute("INSERT INTO book VALUES(Null, ?,?,?,?)", (title, author, year, isbn))
+        self.conn.commit()
 
 
+    def view(self):
+        self.cur.execute("SELECT * from book")
+        rows = self.cur.fetchall()
+        return rows
 
-def view():
-    conn=sqlite3.connect("books.db")
-    cur = conn.cursor()
-    cur.execute("SELECT * from book")
-    rows = cur.fetchall()
-    conn.close()
-    return rows
-
-#need the empty titles so the function doesnt return an error
-def search(title="", author="", year="", isbn=""):
-    conn=sqlite3.connect("books.db")
-    cur = conn.cursor()
-    #Need an OR statement incase he searches either option
-    cur.execute("SELECT * from book where title=? OR author=? OR year=? or isbn=?", (title, author, year, isbn))
-    rows = cur.fetchall()
-    conn.close()
-    return rows
+    #need the empty titles so the function doesnt return an error
+    def search(self,title="", author="", year="", isbn=""):
+        #Need an OR statement incase he searches either option
+        self.cur.execute("SELECT * from book where title=? OR author=? OR year=? or isbn=?", (title, author, year, isbn))
+        rows = self.cur.fetchall()
+        return rows
 
 
-def delete(id):
-    conn=sqlite3.connect("books.db")
-    cur = conn.cursor()
-    cur.execute("DELETE from  book where id=?",(id,))
-    conn.commit()
-    conn.close()
+    def delete(self,id):
+         self.cur.execute("DELETE from  book where id=?",(id,))
+         self.conn.commit()
 
 
-def update(id, title, author, year, isbn):
-    conn=sqlite3.connect("books.db")
-    cur = conn.cursor()
-    cur.execute("UPDATE book SET title=?, author=?, year=?, isbn=? where id=?",(title, author, year, isbn,id))
-    conn.commit()
-    conn.close()
+    def update(self,id, title, author, year, isbn):
+         self.cur.execute("UPDATE book SET title=?, author=?, year=?, isbn=? where id=?",(title, author, year, isbn,id))
+         self.conn.commit()
+        #conn.close()
 
-'''
-CALLING FUNCTIONS
-'''
+#special method to be executed when the program is closed
+    def __del__(self):
+        print("closed")
+        self.conn.close()
 
-#always run this function since we are importing this into the frontend.py
-connection()
-
+    '''
+    CALLING FUNCTIONS
+    '''
 
 #insert("The Earth", "John Smith", 1920, 19181715)
 #print(search(author= "John Smith"))
